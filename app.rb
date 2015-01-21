@@ -23,8 +23,7 @@ class GitCoin < Sinatra::Base
   end
 
   get "/gitcoins" do
-    #render current gitcoins
-    "hi"
+    "<ul>#{gitcoins.map { |hash| "<li>owner: #{hash["owner"]}, coin: #{hash["coin"]}</li>"}.join("\n")}</ul>"
   end
 
   post "/hash" do
@@ -56,5 +55,9 @@ class GitCoin < Sinatra::Base
 
   def current_target
     REDIS.get(TARGET_KEY)
+  end
+
+  def gitcoins
+    REDIS.smembers(GITCOINS_SET_KEY).map { |c| Hash[["owner", "coin"].zip(c.split(":"))] }
   end
 end
