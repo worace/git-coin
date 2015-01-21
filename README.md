@@ -1,5 +1,7 @@
 ## GitCoin
 
+[http://git-coin.herokuapp.com/gitcoins](http://git-coin.herokuapp.com/gitcoins)
+
 GitCoin is a simplistic bitcoin simulator which uses SHA1 Digests of
 user-supplied "commit messages" to calculate a current hash target.
 
