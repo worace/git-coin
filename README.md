@@ -43,6 +43,14 @@ your gitcoins)
 param: message -- The message from which you are trying to generate a
 gitcoin.
 
+example cUrl command:
+
+```
+curl -v -X POST "git-coin.herokuapp.com/hash?message=2015-01-21+16%3A27%3A54+-0700&owner=worace"
+```
+
+
+
 
 __Inspiration for this project came from the Stripe CTF3 challenge,
 which included gitcoins as one its levels.__
