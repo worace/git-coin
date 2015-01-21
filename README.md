@@ -17,6 +17,16 @@ language) EG:
 => true
 ```
 
+### Generating Digests:
+
+Use `Digest::SHA1.hexdigest` to evaluate the digest value of a given
+string, e.g.:
+
+```
+require 'digest'
+Digest::SHA1.hexdigest("my-string")
+```
+
 ### Available Endpoints:
 
 
