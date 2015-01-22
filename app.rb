@@ -2,6 +2,7 @@ require "redis"
 require "sinatra"
 require "digest/sha1"
 require "json"
+require "date"
 
 class GitCoin < Sinatra::Base
   TARGET_KEY = "gitcoin:current_target"
@@ -23,7 +24,7 @@ class GitCoin < Sinatra::Base
   end
 
   get "/gitcoins" do
-    "<ul>#{gitcoins.map { |hash| "<li>owner: #{hash["owner"]}, coin: #{hash["coin"]}</li>"}.join("\n")}</ul>"
+    "<ul>#{gitcoins.map { |hash| "<li>owner: #{hash["owner"]}, coin: #{hash["coin"]}, time awarded: #{timestamp(hash["time"])}</li>"}.join("\n")}</ul>"
   end
 
   post "/hash" do
@@ -33,6 +34,10 @@ class GitCoin < Sinatra::Base
     else
       {:success => false, :gitcoin_assigned => false, :new_target => current_target}.to_json
     end
+  end
+
+  def timestamp(epoch_string)
+    DateTime.strptime(epoch_string,'%s').strftime("%b %e, %l:%M %p")
   end
 
   def new_target?(message, owner)
