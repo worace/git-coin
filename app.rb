@@ -50,7 +50,7 @@ class GitCoin < Sinatra::Base
   end
 
   def assign_gitcoin(owner, digest)
-    REDIS.sadd(GITCOINS_SET_KEY, "#{owner}:#{digest}")
+    REDIS.sadd(GITCOINS_SET_KEY, "#{owner}:#{digest}:#{Time.now.to_i}")
   end
 
   def current_target
@@ -58,6 +58,10 @@ class GitCoin < Sinatra::Base
   end
 
   def gitcoins
-    REDIS.smembers(GITCOINS_SET_KEY).map { |c| Hash[["owner", "coin"].zip(c.split(":"))] }
+    REDIS.smembers(GITCOINS_SET_KEY).map do |c|
+      Hash[["owner", "coin", "time"].zip(c.split(":"))]
+    end.sort_by do |hash|
+      hash["time"].to_i
+    end
   end
 end
