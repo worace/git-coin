@@ -62,6 +62,6 @@ class GitCoin < Sinatra::Base
       Hash[["owner", "coin", "time"].zip(c.split(":"))]
     end.sort_by do |hash|
       hash["time"].to_i
-    end
+    end.reverse
   end
 end
