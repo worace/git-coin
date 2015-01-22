@@ -37,7 +37,11 @@ class GitCoin < Sinatra::Base
   end
 
   def timestamp(epoch_string)
-    DateTime.strptime(epoch_string,'%s').strftime("%b %e, %l:%M %p")
+    if epoch_string
+      DateTime.strptime(epoch_string,'%s').strftime("%b %e, %l:%M %p")
+    else
+      "date unavailable"
+    end
   end
 
   def new_target?(message, owner)
