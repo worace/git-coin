@@ -8,15 +8,29 @@ class GitCoin < Sinatra::Base
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
 
-  configure do
-    if ENV["REDISTOGO_URL"] #heroku
-      uri = URI.parse(ENV["REDISTOGO_URL"])
-      REDIS = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-    else
-      REDIS = Redis.new
-    end
+  def self.redis
+    @@redis
+  end
 
-    REDIS.set(TARGET_KEY, Digest::SHA1.hexdigest("pizza")) unless REDIS.get(TARGET_KEY)
+  def redis
+    self.class.redis
+  end
+
+  def self.initialize_redis
+    unless defined?(@@redis)
+      if ENV["REDISTOGO_URL"] #heroku
+        uri = URI.parse(ENV["REDISTOGO_URL"])
+        @@redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+      else
+        @@redis = Redis.new
+      end
+
+      redis.set(TARGET_KEY, Digest::SHA1.hexdigest("pizza")) unless redis.get(TARGET_KEY)
+    end
+  end
+
+  configure do
+    initialize_redis
   end
 
   get "/target" do
@@ -55,22 +69,31 @@ class GitCoin < Sinatra::Base
   end
 
   def set_target(digest)
-    REDIS.set(TARGET_KEY, digest)
+    redis.set(TARGET_KEY, digest)
   end
 
   def assign_gitcoin(owner, digest)
-    REDIS.sadd(GITCOINS_SET_KEY, "#{owner}:#{digest}:#{Time.now.to_i}")
+    redis.sadd(GITCOINS_SET_KEY, "#{owner}:#{digest}:#{Time.now.to_i}")
   end
 
   def current_target
-    REDIS.get(TARGET_KEY)
+    redis.get(TARGET_KEY)
   end
 
   def gitcoins
-    REDIS.smembers(GITCOINS_SET_KEY).map do |c|
+    redis.smembers(GITCOINS_SET_KEY).map do |c|
       Hash[["owner", "coin", "time"].zip(c.split(":"))]
     end.sort_by do |hash|
       hash["time"].to_i
     end.reverse
+  end
+
+  def self.reset!
+    initialize_redis
+    redis.set(TARGET_KEY, largest_sha)
+  end
+
+  def self.largest_sha
+    "F" * 40
   end
 end
