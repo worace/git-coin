@@ -4,14 +4,23 @@ require "digest/sha1"
 require "json"
 require "date"
 require 'sequel'
+require 'thread'
 
 class GitCoin < Sinatra::Base
-  set :lock, true
+  #set :lock, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
 
   def self.redis
     @@redis
+  end
+
+  def self.assign_coin_lock
+    @@lock ||= Mutex.new
+  end
+
+  def assign_coin_lock
+    self.class.assign_coin_lock
   end
 
   def self.db_url
@@ -65,12 +74,14 @@ class GitCoin < Sinatra::Base
   end
 
   def new_target?(message, owner)
-    digest = Digest::SHA1.hexdigest(message)
-    if digest.hex < current_target.hex
-      assign_gitcoin(owner: owner, digest: digest, message: message, parent: current_target)
-      set_target(digest)
-    else
-      false
+    assign_coin_lock.synchronize do
+      digest = Digest::SHA1.hexdigest(message)
+      if digest.hex < current_target.hex
+        assign_gitcoin(owner: owner, digest: digest, message: message, parent: current_target)
+        set_target(digest)
+      else
+        false
+      end
     end
   end
 
