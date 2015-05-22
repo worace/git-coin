@@ -6,6 +6,7 @@ require "date"
 require 'sequel'
 
 class GitCoin < Sinatra::Base
+  set :lock, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
 
