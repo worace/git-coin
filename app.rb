@@ -5,21 +5,20 @@ require "json"
 require "date"
 require 'sequel'
 
-
-#DB.create_table :links do
-  #primary_key :id
-  #varchar :title
-  #varchar :link
-#end
-
-
-
 class GitCoin < Sinatra::Base
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
 
   def self.redis
     @@redis
+  end
+
+  def self.db_url
+    ENV["DATABASE_URL"] || 'postgres://@localhost/gitcoins'
+  end
+
+  def self.database
+    @@database ||= Sequel.connect(db_url)
   end
 
   def redis
