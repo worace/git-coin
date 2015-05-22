@@ -21,6 +21,10 @@ class GitCoin < Sinatra::Base
     @@database ||= Sequel.connect(db_url)
   end
 
+  def database
+    self.class.database
+  end
+
   def redis
     self.class.redis
   end
@@ -34,7 +38,7 @@ class GitCoin < Sinatra::Base
         @@redis = Redis.new
       end
 
-      redis.set(TARGET_KEY, Digest::SHA1.hexdigest("pizza")) unless redis.get(TARGET_KEY)
+      redis.set(TARGET_KEY, largest_sha) unless redis.get(TARGET_KEY)
     end
   end
 
@@ -47,7 +51,7 @@ class GitCoin < Sinatra::Base
   end
 
   get "/gitcoins" do
-    "<ul>#{gitcoins.map { |hash| "<li>owner: #{hash["owner"]}, coin: #{hash["coin"]}, time awarded: #{timestamp(hash["time"])}</li>"}.join("\n")}</ul>"
+    erb :gitcoins, locals: {gitcoins: gitcoins}
   end
 
   post "/hash" do
@@ -59,18 +63,10 @@ class GitCoin < Sinatra::Base
     end
   end
 
-  def timestamp(epoch_string)
-    if epoch_string
-      DateTime.strptime(epoch_string,'%s').strftime("%b %e, %l:%M %p")
-    else
-      "date unavailable"
-    end
-  end
-
   def new_target?(message, owner)
     digest = Digest::SHA1.hexdigest(message)
     if digest.hex < current_target.hex
-      assign_gitcoin(owner, digest)
+      assign_gitcoin(owner: owner, digest: digest, message: message, parent: current_target)
       set_target(digest)
     else
       false
@@ -81,8 +77,13 @@ class GitCoin < Sinatra::Base
     redis.set(TARGET_KEY, digest)
   end
 
-  def assign_gitcoin(owner, digest)
-    redis.sadd(GITCOINS_SET_KEY, "#{owner}:#{digest}:#{Time.now.to_i}")
+  def assign_gitcoin(options)
+    GitCoin.database[:coins].insert(options.merge(created_at: Time.now, value: value(options[:parent])))
+  end
+
+  def value(digest)
+    #number of leading 0's squared
+    (digest[/\A0+/].to_s.length + 1) ** 2
   end
 
   def current_target
@@ -90,11 +91,7 @@ class GitCoin < Sinatra::Base
   end
 
   def gitcoins
-    redis.smembers(GITCOINS_SET_KEY).map do |c|
-      Hash[["owner", "coin", "time"].zip(c.split(":"))]
-    end.sort_by do |hash|
-      hash["time"].to_i
-    end.reverse
+    database[:coins].reverse_order(:value).all
   end
 
   def self.reset!

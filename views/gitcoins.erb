@@ -1,0 +1,17 @@
+<h3>GitCoins</h3>
+
+<ul>
+  <% gitcoins.each do |coin| %>
+    <li>
+      <p>
+        <span>owner: <%= coin[:owner] %></span>
+        <span>value: <%= coin[:value] %></span>
+        <span>coin: <%= coin[:digest] %></span>
+        <span>time awarded: <%= coin[:created_at] %></span>
+      </p>
+      <p>
+        <span>parent: <%= coin[:parent] %></span>
+      </p>
+    </li>
+  <% end %>
+</ul>
