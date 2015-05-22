@@ -1,17 +1,33 @@
-<h3>GitCoins</h3>
 
-<ul>
-  <% gitcoins.each do |coin| %>
-    <li>
-      <p>
-        <span>owner: <%= coin[:owner] %></span>
-        <span>value: <%= coin[:value] %></span>
-        <span>coin: <%= coin[:digest] %></span>
-        <span>time awarded: <%= coin[:created_at] %></span>
-      </p>
-      <p>
-        <span>parent: <%= coin[:parent] %></span>
-      </p>
-    </li>
-  <% end %>
-</ul>
+<div style="float: left; width:60%;">
+<h3>GitCoins</h3>
+  <ul>
+    <% gitcoins.each do |coin| %>
+      <li>
+        <p>
+          <span>owner: <%= coin[:owner] %></span>
+          <span>value: <%= coin[:value] %></span>
+          <span>coin: <%= coin[:digest] %></span>
+        </p>
+        <p>
+          <span>time awarded: <%= coin[:created_at] %></span>
+          <span>parent: <%= coin[:parent] %></span>
+        </p>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<div style="float:left; width: 20%; padding-left: 20px;">
+  <h3>current GitCoin holdings</h3>
+  <ul>
+    <% gitcoins.group_by { |h| h[:owner] }.each do |owner, group| %>
+      <li>
+        <p>
+          <span>owner: <%= owner %></span>
+          <span>holdings: <%= group.reduce(0) { |s,c| s + c[:value] } %></span>
+        </p>
+      </li>
+    <% end %>
+  </ul>
+</div>
