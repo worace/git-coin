@@ -3,6 +3,16 @@ require "sinatra"
 require "digest/sha1"
 require "json"
 require "date"
+require 'sequel'
+
+
+#DB.create_table :links do
+  #primary_key :id
+  #varchar :title
+  #varchar :link
+#end
+
+
 
 class GitCoin < Sinatra::Base
   TARGET_KEY = "gitcoin:current_target"

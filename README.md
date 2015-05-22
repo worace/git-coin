@@ -8,9 +8,8 @@ user-supplied "commit messages" to calculate a current hash target.
 To be awarded gitcoins, users must submit new commit messages which
 generate SHA digests smaller than the current target hash.
 
-To compare the numeric value of your digest with the target (or any
-other hash), use String#hex (in Ruby, or the equivalent in your
-language) EG:
+To compare the your Hex digest with the target, convert it to
+a number, e.g.:
 
 ```
 > "1f6ccd2be75f1cc94a22a773eea8f8aeb5c68217".hex < "75e2575535d998d7cfb6b627ffc60550c1e23301".hex
