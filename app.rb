@@ -91,7 +91,7 @@ class GitCoin < Sinatra::Base
   end
 
   def gitcoins
-    database[:coins].reverse_order(:value).all
+    database[:coins].reverse_order(:created_at).all
   end
 
   def self.reset!
