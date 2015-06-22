@@ -7,6 +7,7 @@ require 'sequel'
 require 'thread'
 
 class GitCoin < Sinatra::Base
+  set :logging, true
   #set :lock, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
@@ -76,13 +77,21 @@ class GitCoin < Sinatra::Base
   def new_target?(message, owner)
     assign_coin_lock.synchronize do
       digest = Digest::SHA1.hexdigest(message)
-      if digest.hex < current_target.hex
+      if unique_coin?(message) && lower_coin?(digest)
         assign_gitcoin(owner: owner, digest: digest, message: message, parent: current_target)
         set_target(digest)
       else
         false
       end
     end
+  end
+
+  def lower_coin?(digest)
+    digest.hex < current_target.hex
+  end
+
+  def unique_coin?(message)
+    database[:coins].where(message: message).none?
   end
 
   def set_target(digest)
