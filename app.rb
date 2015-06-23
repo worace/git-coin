@@ -105,7 +105,7 @@ class GitCoin < Sinatra::Base
   end
 
   def below_reset_threshold?(digest)
-    digest.hex < ("0000007" + "F" * 33).hex
+    digest.hex < ("0000000" + "F" * 33).hex
   end
 
   def assign_gitcoin(options)
