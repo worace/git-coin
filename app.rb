@@ -119,7 +119,7 @@ class GitCoin < Sinatra::Base
   end
 
   def value(digest)
-    (zeros_count(digest) + 1) ** 3
+    (zeros_count(digest) + 1) ** 2
   end
 
   def current_target
