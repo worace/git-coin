@@ -105,7 +105,7 @@ class GitCoin < Sinatra::Base
   end
 
   def below_reset_threshold?(digest)
-    zeros_count(digest) > 6
+    zeros_count(digest) > 5
   end
 
   def assign_gitcoin(options)
