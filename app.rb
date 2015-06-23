@@ -104,7 +104,7 @@ class GitCoin < Sinatra::Base
 
   def value(digest)
     #number of leading 0's squared
-    (digest[/\A0+/].to_s.length + 1) ** 2
+    (digest[/\A0+/].to_s.length + 1) ** 3
   end
 
   def current_target
