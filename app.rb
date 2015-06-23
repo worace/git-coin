@@ -109,7 +109,8 @@ class GitCoin < Sinatra::Base
   end
 
   def assign_gitcoin(options)
-    GitCoin.database[:coins].insert(options.merge(created_at: Time.now, value: value(options[:parent])))
+    coin = GitCoin.database[:coins].insert(options.merge(created_at: Time.now, value: value(options[:parent])))
+    LOGGER.info("Assigned coin: #{coin}.")
   end
 
   def zeros_count(digest)
