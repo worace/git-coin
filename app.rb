@@ -5,10 +5,10 @@ require "json"
 require "date"
 require 'sequel'
 require 'thread'
+require 'logger'
 
 class GitCoin < Sinatra::Base
   set :logging, true
-  #set :lock, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
 
@@ -55,6 +55,7 @@ class GitCoin < Sinatra::Base
 
   configure do
     initialize_redis
+    LOGGER = Logger.new(STDOUT)
   end
 
   get "/target" do
@@ -96,6 +97,7 @@ class GitCoin < Sinatra::Base
 
   def set_target(digest)
     if below_reset_threshold?(digest)
+      LOGGER.info("Coin #{digest} was below threshold; resetting to #{self.class.largest_sha}.")
       redis.set(TARGET_KEY, self.class.largest_sha)
     else
       redis.set(TARGET_KEY, digest)
@@ -103,7 +105,7 @@ class GitCoin < Sinatra::Base
   end
 
   def below_reset_threshold?(digest)
-    zeros_count?(digest) > 5
+    zeros_count(digest) > 6
   end
 
   def assign_gitcoin(options)
@@ -116,7 +118,7 @@ class GitCoin < Sinatra::Base
   end
 
   def value(digest)
-    (zeros_count(digest) + 1) ** 2
+    (zeros_count(digest) + 1) ** 3
   end
 
   def current_target
@@ -130,6 +132,7 @@ class GitCoin < Sinatra::Base
   def self.reset!
     initialize_redis
     redis.set(TARGET_KEY, largest_sha)
+    LOGGER.info("reset the coins!")
   end
 
   def self.largest_sha
