@@ -67,6 +67,7 @@ GitCoin Todo
 - [ ] remove dupes in prod db
 - [X] increase scaling factor
 - [ ] scrape message lists to send to coin owners
+- [ ] shareable miner gem?
 
 GitCoin/PC Auction
 
