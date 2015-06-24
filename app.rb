@@ -25,8 +25,8 @@ class PointAuction
     end
   end
 
-  def self.reset!
-    new.save!
+  def self.reset!(points=20)
+    new("points" => points).save!
   end
 
   attr_reader :bids, :active, :points
