@@ -104,6 +104,7 @@ class GitCoin < Sinatra::Base
     bid = params["bid"] || {}
     posse = bid["posse"]
     message = bid["message"]
+    auction = PointAuction.current_auction
     unless posse && message
       return {error: "Must provide coin message and posse attribution"}.to_json
     end
@@ -113,11 +114,12 @@ class GitCoin < Sinatra::Base
     unless coin = database[:coins].where(message: message).first
       return {error: "Sorry, #{message} is not a valid coin message"}.to_json
     end
-    unless coin[:spent] == false
+    if database[:debits].where(digest: coin[:digest]).any?
       return {error: "Sorry, #{message} has already been spent"}.to_json
     end
-    if bid = PointAuction.current_auction.place_bid(posse, coin)
-      ## Success do things
+    if bid = auction.place_bid(posse, coin)
+      auction.save!
+      return {success: "true", message: "bid coin #{coin[:digest]} toward #{posse}"}.to_json
     else
       return {error: "Sorry, #{message} has already been bid on this auction"}.to_json
     end
