@@ -140,6 +140,9 @@ class GitCoin < Sinatra::Base
     unless PointAuction::POSSES.include?(posse)
       return {error: "Sorry, #{posse} is not a valid posse"}.to_json
     end
+    unless auction.active
+      return {error: "Sorry, this auction is closed"}.to_json
+    end
     unless coin = database[:coins].where(message: message).first
       return {error: "Sorry, #{message} is not a valid coin message"}.to_json
     end
