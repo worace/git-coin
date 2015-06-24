@@ -13,3 +13,28 @@
   <h4>Total: <%= auction.total(posse) %> </h4>
 </div>
 <% end %>
+
+
+<h2>Want to Place a Bid?</h2>
+
+<p>Place a bid by entering a gitcoin message and a posse that you'd like to bid for</p>
+
+<form action="/bid" method="POST">
+  <p>
+  <label for="bid[message]">Coin Message (must match message used to generate original coin)</label>
+  <input type="text" name="bid[message]">
+  </input>
+  </p>
+
+  <p>
+  <label for="bid[message]">Choose the Posse You'd Like to Bid This Coin Toward</label>
+  <select name="bid[posse]">
+    <% PointAuction::POSSES.each do |p| %>
+      <option value="<%=p%>"><%=p%></option> 
+    <% end %>
+  </select>
+  </p>
+  <p>
+  <input type="submit" value="Submit">
+  </p>
+</form>

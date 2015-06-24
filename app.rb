@@ -8,6 +8,7 @@ require 'thread'
 require 'logger'
 
 class PointAuction
+  POSSES = ["Alan Kay", "Tim Berners-Lee", "Fred Brooks", "Donald Knuth", "Ada Lovelace", "Grace Hopper", "James Golick", "Weirich", "Adele Goldberg", "Dennis Ritchie", "Ezra Zygmuntowicz", "Yukihiro Matsumoto"]
   def self.redis
     @@redis
   end
@@ -97,6 +98,29 @@ class GitCoin < Sinatra::Base
 
   get "/auction" do
     erb :auction, locals: {auction: PointAuction.current_auction}
+  end
+
+  post "/bid" do
+    bid = params["bid"] || {}
+    posse = bid["posse"]
+    message = bid["message"]
+    unless posse && message
+      return {error: "Must provide coin message and posse attribution"}.to_json
+    end
+    unless PointAuction::POSSES.include?(posse)
+      return {error: "Sorry, #{posse} is not a valid posse"}.to_json
+    end
+    unless coin = database[:coins].where(message: message).first
+      return {error: "Sorry, #{message} is not a valid coin message"}.to_json
+    end
+    unless coin[:spent] == false
+      return {error: "Sorry, #{message} has already been spent"}.to_json
+    end
+    if bid = PointAuction.current_auction.place_bid(posse, coin)
+      ## Success do things
+    else
+      return {error: "Sorry, #{message} has already been bid on this auction"}.to_json
+    end
   end
 
   get "/target" do
