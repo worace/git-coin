@@ -77,9 +77,13 @@ class PointAuction
   end
 
   def leader
-    bids.sort_by do |posse, bids|
-      total(posse)
-    end.last.first
+    if bids.any?
+      bids.sort_by do |posse, bids|
+        total(posse)
+      end.last.first
+    else
+      "No Bids Yet"
+    end
   end
 
   def complete!
