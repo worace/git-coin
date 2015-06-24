@@ -1,0 +1,15 @@
+<h1>Current Posse Cup Point Auction</h1>
+
+<h2>Current Bids</h2>
+
+<% auction.bids.each do |posse, bids| %>
+<div>
+  <h4><%= posse %></h4>
+  <ul>
+    <% bids.each do |b| %>
+      <li>Coin: <%= b["digest"] %>. Value: <%= b["value"] %></li>
+    <% end %>
+  </ul>
+  <h4>Total: <%= auction.total(posse) %> </h4>
+</div>
+<% end %>

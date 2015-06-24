@@ -66,7 +66,7 @@ GitCoin Todo
 - [X] add auto-reset tripper (after X 0's?)
 - [X] remove dupes in prod db
 - [X] increase scaling factor
-- [ ] scrape message lists to send to coin owners
+- [X] scrape message lists to send to coin owners (use auth'ed coinbase endpoint)
 - [ ] shareable miner gem?
 
 GitCoin/PC Auction

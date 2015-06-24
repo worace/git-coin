@@ -7,11 +7,97 @@ require 'sequel'
 require 'thread'
 require 'logger'
 
+class PointAuction
+  def self.redis
+    @@redis
+  end
+
+  def self.redis=(redis)
+    @@redis = redis
+  end
+
+  def self.current_auction
+    if auction_data = redis.get("current_point_auction")
+      new(JSON.parse(auction_data))
+    else
+      new
+    end
+  end
+
+  attr_reader :bids, :active
+
+  def initialize(auction_data = {})
+    @bids = auction_data["bids"] || {}
+    @active = auction_data["active"] || true
+  end
+
+  def total(posse)
+    bids.fetch(posse, []).map do |b|
+      b["value"]
+    end.reduce(0, :+)
+  end
+
+  def posse_bid_messages(posse)
+    bids.fetch(posse, []).map do |coin|
+      coin["message"]
+    end
+  end
+
+  def all_digests
+    bids.flat_map do |p, coins|
+      coins.map { |c| c["digest"] }
+    end
+  end
+
+  def coin_already_bid?(coin)
+    all_digests.include?(coin["digest"] || coin[:digest])
+  end
+
+  def place_bid(posse, coin)
+    # take in sequel coin hashes (sym keys)
+    # add to bid roster string-keyed hash of digest and val
+    unless coin_already_bid?(coin)
+      bids[posse] ||= []
+      bids[posse] << {"digest" => coin[:digest], "value" => coin[:value]}
+    end
+  end
+
+  def to_json
+    {"bids" => bids, "active" => active}.to_json
+  end
+
+  def save!
+    self.class.redis.set("current_point_auction", to_json)
+  end
+
+  # initialize with point value
+  # store current live auction in...redis?
+  # need a ui where users can see
+  #   * current point value up for auction
+  #   * list of coins bid grouped by posse assignment
+  #     (bids should show digest, coin value, and total value bid toward a given value)
+  #   * form to submit additional bid by entering coin message and posse you are bidding for
+  #
+  # Q: How to reload the current point auction each request?
+  # A: Serialize somehow? Redis
+
+  # Q: What happens when ending an auction?
+  # A: Need to:
+  #    * record point award to highest "beneficiary" posse
+  #    * debit / record spent the coins that were bid toward that posse
+  #    * record that point auction has ended somehow
+
+end
+
 class GitCoin < Sinatra::Base
   set :logging, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
   AUTH_TOKEN = ENV["GITCOIN_TOKEN"] || "token"
+
+  get "/auction" do
+    erb :auction, locals: {auction: PointAuction.current_auction}
+  end
 
   get "/target" do
     current_target
@@ -166,7 +252,8 @@ class GitCoin < Sinatra::Base
 
   configure do
     initialize_redis
+    PointAuction.redis = redis
     LOGGER = Logger.new(STDOUT)
   end
-
 end
+
