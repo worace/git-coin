@@ -25,6 +25,10 @@ class PointAuction
     end
   end
 
+  def self.reset!
+    new.save!
+  end
+
   attr_reader :bids, :active, :points
 
   def initialize(auction_data = {})
