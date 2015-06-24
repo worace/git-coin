@@ -15,6 +15,7 @@
 <% end %>
 
 
+<% if auction.active %>
 <h2>Want to Place a Bid?</h2>
 
 <p>Place a bid by entering a gitcoin message and a posse that you'd like to bid for</p>
@@ -38,3 +39,11 @@
   <input type="submit" value="Submit">
   </p>
 </form>
+<% else %>
+<h3>This auction has ended!<h3>
+
+<h4>Winner is: <%= auction.leader %></h4>
+
+<h4>They will receive: <%= auction.points %> points</h4>
+
+<% end %>

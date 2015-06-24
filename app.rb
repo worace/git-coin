@@ -25,11 +25,12 @@ class PointAuction
     end
   end
 
-  attr_reader :bids, :active
+  attr_reader :bids, :active, :points
 
   def initialize(auction_data = {})
     @bids = auction_data["bids"] || {}
-    @active = auction_data["active"] || true
+    @active = auction_data.fetch("active", true)
+    @points = auction_data["points"] || 20
   end
 
   def total(posse)
@@ -64,11 +65,27 @@ class PointAuction
   end
 
   def to_json
-    {"bids" => bids, "active" => active}.to_json
+    {"bids" => bids, "active" => active, "points" => points}.to_json
   end
 
   def save!
     self.class.redis.set("current_point_auction", to_json)
+  end
+
+  def leader
+    bids.sort_by do |posse, bids|
+      total(posse)
+    end.last.first
+  end
+
+  def complete!
+    if award_id = GitCoin.database[:posse_awards].insert(value: points, posse: leader, created_at: Time.now)
+      bids[leader].each do |bid|
+        GitCoin.database[:debits].insert(digest: bid["digest"], posse_award_id: award_id, created_at: Time.now)
+      end
+    end
+    @active = false
+    save!
   end
 
   # initialize with point value
@@ -98,6 +115,10 @@ class GitCoin < Sinatra::Base
 
   get "/auction" do
     erb :auction, locals: {auction: PointAuction.current_auction}
+  end
+
+  get "/awards" do
+    database[:posse_awards].all.to_json
   end
 
   post "/bid" do
