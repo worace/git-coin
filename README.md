@@ -63,8 +63,8 @@ curl -v -X POST "git-coin.herokuapp.com/hash?message=2015-01-21+16%3A27%3A54+-07
 
 GitCoin Todo
 
-- [ ] add auto-reset tripper (after X 0's?)
-- [ ] remove dupes in prod db
+- [X] add auto-reset tripper (after X 0's?)
+- [X] remove dupes in prod db
 - [X] increase scaling factor
 - [ ] scrape message lists to send to coin owners
 - [ ] shareable miner gem?

@@ -11,6 +11,32 @@ class GitCoin < Sinatra::Base
   set :logging, true
   TARGET_KEY = "gitcoin:current_target"
   GITCOINS_SET_KEY = "gitcoins:by_owner"
+  AUTH_TOKEN = ENV["GITCOIN_TOKEN"] || "token"
+
+  get "/target" do
+    current_target
+  end
+
+  get "/gitcoins" do
+    erb :gitcoins, locals: {gitcoins: gitcoins}
+  end
+
+  post "/hash" do
+    content_type :json
+    if coin = new_target?(params[:message], params[:owner])
+      {:success => true, :gitcoin_assigned => coin, :new_target => current_target}.to_json
+    else
+      {:success => false, :gitcoin_assigned => false, :new_target => current_target}.to_json
+    end
+  end
+
+  get "/coinbase" do
+    if request["GITCOIN_TOKEN"] == AUTH_TOKEN
+      messages_by_owner.to_json
+    else
+      {status: :not_authorized, message: "auth token required"}.to_json
+    end
+  end
 
   def self.redis
     @@redis
@@ -50,28 +76,6 @@ class GitCoin < Sinatra::Base
       end
 
       redis.set(TARGET_KEY, largest_sha) unless redis.get(TARGET_KEY)
-    end
-  end
-
-  configure do
-    initialize_redis
-    LOGGER = Logger.new(STDOUT)
-  end
-
-  get "/target" do
-    current_target
-  end
-
-  get "/gitcoins" do
-    erb :gitcoins, locals: {gitcoins: gitcoins}
-  end
-
-  post "/hash" do
-    content_type :json
-    if coin = new_target?(params[:message], params[:owner])
-      {:success => true, :gitcoin_assigned => coin, :new_target => current_target}.to_json
-    else
-      {:success => false, :gitcoin_assigned => false, :new_target => current_target}.to_json
     end
   end
 
@@ -147,4 +151,22 @@ class GitCoin < Sinatra::Base
   def self.largest_sha
     "F" * 40
   end
+
+  def messages_by_owner
+    database[:coins].all.map do |c|
+      {value: c[:value], message: c[:message], owner: c[:owner]}
+    end.group_by do |c|
+      c[:owner]
+    end
+  end
+
+  def owners
+    database[:coins].select(:owner).all.uniq
+  end
+
+  configure do
+    initialize_redis
+    LOGGER = Logger.new(STDOUT)
+  end
+
 end
