@@ -191,19 +191,22 @@ require "json"
 resp = Hurley.post("http://git-coin.herokuapp.com/hash", owner: "worace", message: "pizza")
 => #<Hurley::Response POST http://git-coin.herokuapp.com/hash == 200 (98 bytes) 4184ms>
 resp.body
-=> "{\"success\":false,\"gitcoin_assigned\":false,\"new_target\":\"00000016db5fc64969e96104674f8b620bb08bd3\"}"
+=> "{\"success\":false,\"gitcoin_assigned\":false,\"new_target\":\"00000016db5fc64969e96104674f8b620bb08bd3\",\"parent_hash\":\"00000016db5fc64969e96104674f8b620bb08bd3\"}"
 JSON.parse(resp.body)
+=> {"success"=>false,
+    "gitcoin_assigned"=>false,
+    "new_target"=>"00000016db5fc64969e96104674f8b620bb08bd3",
+    "parent_hash"=>"00000016db5fc64969e96104674f8b620bb08bd3"}
+```
 
-```
-example cUrl command:
-
-```
-curl -v -X POST "git-coin.herokuapp.com/hash?message=2015-01-21+16%3A27%3A54+-0700&owner=worace"
-```
+Note that in this example we didn't get a coin (our message didn't produce a low
+enough hash), but a successful digest would have included `"success": true` in its
+JSON payload.
 
 **GET /gitcoins**
 
-See a list of all the previously awarded gitcoins.
+This is just a simple HTML endpoint that shows a list of all previously
+awarded gitcoins.
 
 #### Todos
 
