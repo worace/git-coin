@@ -152,6 +152,8 @@ Your miner will need to parse this response and use it to generate digests
 and check them against the target. Note that these inputs are returned
 as hexadecimal strings representing the numeric values.
 
+Example:
+
 
 **POST /hash**
 
