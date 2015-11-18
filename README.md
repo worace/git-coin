@@ -77,15 +77,15 @@ generate SHA digests smaller than the current target hash.
 To compare the your Hex digest with the target, convert it to
 a number, e.g.:
 
-```
-> "1f6ccd2be75f1cc94a22a773eea8f8aeb5c68217".hex < "75e2575535d998d7cfb6b627ffc60550c1e23301".hex
+```ruby
+"1f6ccd2be75f1cc94a22a773eea8f8aeb5c68217".hex < "75e2575535d998d7cfb6b627ffc60550c1e23301".hex
 => true
 ```
 
 To generate a new hash, use `Digest::SHA1.hexdigest`
 to evaluate the digest value of a given string, e.g.:
 
-```
+```ruby
 require 'digest'
 Digest::SHA1.hexdigest("my-string")
 ```
@@ -97,7 +97,7 @@ Remember that the inputs of our digest must be:
 
 So to attempt a hash, we could use a process something like this:
 
-```
+```ruby
 require "digest"
 
 target = "00000016db5fc64969e96104674f8b620bb08bd3"
@@ -141,7 +141,7 @@ hash.
 
 The response will look like this:
 
-```
+```json
 {
  "target": "00000016db5fc64969e96104674f8b620bb08bd3",
  "parent_hash": "0000001e46f2b8147808753084b791be453d7517"
@@ -154,6 +154,18 @@ as hexadecimal strings representing the numeric values.
 
 Example:
 
+```ruby
+require "hurley"
+=> true
+require "json"
+=> true
+target_payload = JSON.parse(Hurley.get("http://git-coin.herokuapp.com/target").body)
+=> {"target"=>"00000016db5fc64969e96104674f8b620bb08bd3", "parent_hash"=>"00000016db5fc64969e96104674f8b620bb08bd3"}
+target = target_payload["target"]
+=> "00000016db5fc64969e96104674f8b620bb08bd3"
+parent_hash = target_payload["parent_hash"]
+=> "00000016db5fc64969e96104674f8b620bb08bd3"
+```
 
 **POST /hash**
 
@@ -170,6 +182,19 @@ want to include your name for bragging rights!
 the current target. Remember that your message will be concatenated with the
 parent hash, digested, and compared against the target
 
+Example:
+
+```ruby
+require "hurley"
+require "json"
+
+resp = Hurley.post("http://git-coin.herokuapp.com/hash", owner: "worace", message: "pizza")
+=> #<Hurley::Response POST http://git-coin.herokuapp.com/hash == 200 (98 bytes) 4184ms>
+resp.body
+=> "{\"success\":false,\"gitcoin_assigned\":false,\"new_target\":\"00000016db5fc64969e96104674f8b620bb08bd3\"}"
+JSON.parse(resp.body)
+
+```
 example cUrl command:
 
 ```

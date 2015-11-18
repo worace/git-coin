@@ -28,9 +28,15 @@ class GitCoin < Sinatra::Base
   post "/hash" do
     content_type :json
     if coin = new_target?(params[:message], params[:owner])
-      {:success => true, :gitcoin_assigned => coin, :new_target => current_target}.to_json
+      {:success => true,
+       :gitcoin_assigned => coin,
+       :new_target => current_target,
+       :parent_hash => parent_hash}.to_json
     else
-      {:success => false, :gitcoin_assigned => false, :new_target => current_target}.to_json
+      {:success => false,
+       :gitcoin_assigned => false,
+       :new_target => current_target,
+       :parent_hash => parent_hash}.to_json
     end
   end
 
