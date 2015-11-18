@@ -14,7 +14,11 @@ class GitCoin < Sinatra::Base
   AUTH_TOKEN = ENV["GITCOIN_TOKEN"] || "token"
 
   get "/target" do
-    current_target
+    {target: current_target, parent_hash: parent_hash}.to_json
+  end
+
+  def parent_hash
+    database[:coins].order(Sequel.desc(:created_at)).first[:digest] || largest_sha
   end
 
   get "/gitcoins" do
@@ -73,9 +77,9 @@ class GitCoin < Sinatra::Base
 
   def new_target?(message, owner)
     assign_coin_lock.synchronize do
-      digest = Digest::SHA1.hexdigest(message)
+      digest = Digest::SHA1.hexdigest(parent_hash + message)
       if unique_coin?(message) && lower_coin?(digest)
-        assign_gitcoin(owner: owner, digest: digest, message: message, parent: current_target)
+        assign_gitcoin(owner: owner, digest: digest, message: message, parent: parent_hash)
         set_target(digest)
       else
         false
@@ -142,6 +146,10 @@ class GitCoin < Sinatra::Base
 
   def self.largest_sha
     "F" * 40
+  end
+
+  def largest_sha
+    self.class.largest_sha
   end
 
   def messages_by_owner
