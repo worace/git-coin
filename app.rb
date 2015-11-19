@@ -18,7 +18,11 @@ class GitCoin < Sinatra::Base
   end
 
   def parent_hash
-    database[:coins].order(Sequel.desc(:created_at)).first[:digest] || largest_sha
+    if database[:coins].count > 0
+      database[:coins].order(Sequel.desc(:created_at)).first[:digest]
+    else
+      largest_sha
+    end
   end
 
   get "/gitcoins" do
