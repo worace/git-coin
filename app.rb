@@ -88,6 +88,10 @@ class GitCoin < Sinatra::Base
   def new_target?(message, owner)
     assign_coin_lock.synchronize do
       digest = Digest::SHA1.hexdigest(parent_hash + message)
+      LOGGER.info("User #{owner} submitted coin with message: #{message}")
+      LOGGER.info("Current parent: #{parent_hash}")
+      LOGGER.info("Current target: #{current_target}")
+      LOGGER.info("Submitted coin digests to: #{digest}")
       if lower_coin?(digest)
         assign_gitcoin(owner: owner, digest: digest, message: message, parent: parent_hash)
         set_target(digest)
