@@ -88,7 +88,7 @@ class GitCoin < Sinatra::Base
   def new_target?(message, owner)
     assign_coin_lock.synchronize do
       digest = Digest::SHA1.hexdigest(parent_hash + message)
-      if unique_coin?(message) && lower_coin?(digest)
+      if lower_coin?(digest)
         assign_gitcoin(owner: owner, digest: digest, message: message, parent: parent_hash)
         set_target(digest)
       else
@@ -99,10 +99,6 @@ class GitCoin < Sinatra::Base
 
   def lower_coin?(digest)
     digest.hex < current_target.hex
-  end
-
-  def unique_coin?(message)
-    database[:coins].where(message: message).none?
   end
 
   def set_target(digest)
